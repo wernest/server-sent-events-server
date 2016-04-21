@@ -48,6 +48,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.glassfish.jersey.media.sse.SseFeature;
@@ -86,18 +88,17 @@ public class ServerSentEventsResource {
         new Thread() {
             public void run() {
                 try {
-                    seq.write(new OutboundEvent.Builder().name("domain-progress")
-                            .data(String.class, "starting domain " + id + " ...").build());
-                    Thread.sleep(2000);
-                    seq.write(new OutboundEvent.Builder().name("domain-progress").data(String.class, "50%").build());
-                    Thread.sleep(2000);
-                    seq.write(new OutboundEvent.Builder().name("domain-progress").data(String.class, "60%").build());
-                    Thread.sleep(2000);
-                    seq.write(new OutboundEvent.Builder().name("domain-progress").data(String.class, "70%").build());
-                    Thread.sleep(2000);
-                    seq.write(new OutboundEvent.Builder().name("domain-progress").data(String.class, "99%").build());
-                    Thread.sleep(2000);
-                    seq.write(new OutboundEvent.Builder().name("domain-progress").data(String.class, "done").build());
+                    int x = 0;
+                    while(x < 100) {
+                        SampleObject so = new SampleObject();
+                        so.setAge(x);
+                        so.setGreeting("Hello");
+                        so.setName("Will");
+                        Gson gson = new GsonBuilder().create();
+                        seq.write(new OutboundEvent.Builder().name("sample-object").data(String.class, gson.toJson(so)).build());
+                        x++;
+                        Thread.sleep(1000);
+                    }
                     seq.close();
 
                 } catch (final InterruptedException | IOException e) {
