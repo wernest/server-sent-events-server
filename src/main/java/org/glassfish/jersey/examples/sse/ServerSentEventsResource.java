@@ -40,6 +40,7 @@
 package org.glassfish.jersey.examples.sse;
 
 import java.io.IOException;
+import java.util.*;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -50,6 +51,7 @@ import javax.ws.rs.Produces;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.sun.deploy.security.MozillaSSLRootCertStore;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.glassfish.jersey.media.sse.SseFeature;
@@ -58,9 +60,10 @@ import org.glassfish.jersey.media.sse.SseFeature;
  * @author Pavel Bucek (pavel.bucek at oracle.com)
  */
 @Path("server-sent-events")
-public class ServerSentEventsResource {
+public class ServerSentEventsResource{
 
     private static EventOutput eventOutput = new EventOutput();
+    final List<Object> list = new LinkedList<>();
 
     @GET
     @Produces(SseFeature.SERVER_SENT_EVENTS)
@@ -80,29 +83,33 @@ public class ServerSentEventsResource {
     }
 
     @GET
-    @Path("domains/{id}")
+    @Path("updates/{subscriptionId}")
     @Produces(SseFeature.SERVER_SENT_EVENTS)
-    public EventOutput startDomain(@PathParam("id") final String id) {
+    public EventOutput startDomain(@PathParam("subscriptionId") final String subscriptionId) {
         final EventOutput seq = new EventOutput();
+        MessageManager.getInstance().addList(subscriptionId, this.list);
 
         new Thread() {
             public void run() {
-                try {
-                    int x = 0;
-                    while(x < 100) {
-                        SampleObject so = new SampleObject();
-                        so.setAge(x);
-                        so.setGreeting("Hello");
-                        so.setName("Will");
-                        Gson gson = new GsonBuilder().create();
-                        seq.write(new OutboundEvent.Builder().name("sample-object").data(String.class, gson.toJson(so)).build());
-                        x++;
-                        Thread.sleep(1000);
+                try{
+                    while(!seq.isClosed()){
+                        if (list.size() > 0) {
+                            Object object = list.remove(0);
+                            Gson gson = new GsonBuilder().create();
+                            seq.write(new OutboundEvent.Builder().name(SampleObject.class.getSimpleName())
+                                .data(String.class, gson.toJson(object)).build());
+                        }
                     }
-                    seq.close();
-
-                } catch (final InterruptedException | IOException e) {
+                } catch (final IOException e) {
                     e.printStackTrace();
+                    try {
+                        if (!seq.isClosed()) {
+                            seq.close();
+                            close();
+                        }
+                    }catch(IOException ioe) {
+                        System.out.println("problem closing seq " + ioe.toString());
+                    }
                 }
             }
         }.start();
