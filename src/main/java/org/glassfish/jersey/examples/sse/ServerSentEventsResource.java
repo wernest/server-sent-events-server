@@ -40,7 +40,10 @@
 package org.glassfish.jersey.examples.sse;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.*;
+import java.util.List;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -51,10 +54,10 @@ import javax.ws.rs.Produces;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.sun.deploy.security.MozillaSSLRootCertStore;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.glassfish.jersey.media.sse.SseFeature;
+import javax.ws.rs.core.MediaType;
 
 /**
  * @author Pavel Bucek (pavel.bucek at oracle.com)
@@ -63,12 +66,15 @@ import org.glassfish.jersey.media.sse.SseFeature;
 public class ServerSentEventsResource{
 
     private static EventOutput eventOutput = new EventOutput();
-    final List<Object> list = new LinkedList<>();
 
     @GET
-    @Produces(SseFeature.SERVER_SENT_EVENTS)
-    public EventOutput getMessageQueue() {
-        return eventOutput;
+    @Path("updates")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String get(){
+        final List<Object> list = new LinkedList<>();
+        final String subscriptionId = new BigInteger(12, new SecureRandom()).toString();
+        MessageManager.getInstance().addList(subscriptionId, list);
+        return subscriptionId;
     }
 
     @POST
@@ -87,7 +93,8 @@ public class ServerSentEventsResource{
     @Produces(SseFeature.SERVER_SENT_EVENTS)
     public EventOutput startDomain(@PathParam("subscriptionId") final String subscriptionId) {
         final EventOutput seq = new EventOutput();
-        MessageManager.getInstance().addList(subscriptionId, this.list);
+        final List<Object> list = MessageManager.getInstance().getList(subscriptionId);
+        MessageManager.getInstance().addList(subscriptionId, list);
 
         new Thread() {
             public void run() {

@@ -1,9 +1,8 @@
 package org.glassfish.jersey.examples.sse;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
+import com.sun.corba.se.spi.ior.ObjectKey;
+
+import java.util.*;
 
 /**
  * Created by wernest on 4/21/2016.
@@ -28,6 +27,16 @@ public class MessageManager {
       list.addAll(oldList);
     }
     this.listMap.put(subscriptionId, list);
+  }
+
+  public List<Object> getList(String subscriptionId){
+    if(this.listMap.containsKey(subscriptionId)) {
+      return this.listMap.get(subscriptionId);
+    }else {
+      List<Object> list = new LinkedList<>();
+      this.addList(subscriptionId, list);
+      return list;
+    }
   }
 
   public void removeList(String subscriptionId){

@@ -24,27 +24,9 @@ public class App {
   public static void main(String[] args) {
     try {
 
-      new Thread() {
-        public void run() {
-          try {
-            int x = 0;
-            while (true) {
-              SampleObject sampleObject = new SampleObject();
-              sampleObject.setName("Will");
-              sampleObject.setAge(x++);
-              sampleObject.setGreeting("Hello World");
-              MessageManager.getInstance().addItem("1", sampleObject);
-              Thread.sleep(10000);
-            }
-          } catch (InterruptedException e) {
-            System.out.println(e.toString());
-          }
-        }
-      }.start();
-
       System.out.println("\"Server-Sent Events\" Jersey Example App");
 
-      final ResourceConfig resourceConfig = new ResourceConfig(ServerSentEventsResource.class, SseFeature.class);
+      final ResourceConfig resourceConfig = new ResourceConfig(RestEventsResource.class, ServerSentEventsResource.class, SseFeature.class);
 
       final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);
       Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
