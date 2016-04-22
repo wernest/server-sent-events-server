@@ -1,7 +1,5 @@
 package org.glassfish.jersey.examples.sse;
 
-import com.sun.corba.se.spi.ior.ObjectKey;
-
 import java.util.*;
 
 /**

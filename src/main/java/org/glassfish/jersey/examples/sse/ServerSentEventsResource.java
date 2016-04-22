@@ -66,6 +66,7 @@ import javax.ws.rs.core.MediaType;
 public class ServerSentEventsResource{
 
     private static EventOutput eventOutput = new EventOutput();
+    private Thread sseThread = null;
 
     @GET
     @Path("updates")
@@ -82,24 +83,35 @@ public class ServerSentEventsResource{
         eventOutput.write(new OutboundEvent.Builder().name("custom-message").data(String.class, message).build());
     }
 
+  /**
+   * Used to close a subscription from a client.
+   * @param subscriptionId subscriptionId to close
+   * @throws IOException
+   */
     @DELETE
-    public void close() throws IOException {
+    @Path("updates/{subscriptionId}")
+    public void close(@PathParam("subscriptionId") String subscriptionId) throws IOException {
         eventOutput.close();
         ServerSentEventsResource.setEventOutput(new EventOutput());
+        this.sseThread.interrupt();
+        MessageManager.getInstance().removeList(subscriptionId);
     }
 
     @GET
     @Path("updates/{subscriptionId}")
     @Produces(SseFeature.SERVER_SENT_EVENTS)
-    public EventOutput startDomain(@PathParam("subscriptionId") final String subscriptionId) {
+    public EventOutput startChannelCommunication(@PathParam("subscriptionId") final String subscriptionId) {
         final EventOutput seq = new EventOutput();
         final List<Object> list = MessageManager.getInstance().getList(subscriptionId);
         MessageManager.getInstance().addList(subscriptionId, list);
 
-        new Thread() {
+        this.sseThread = new Thread() {
             public void run() {
                 try{
                     while(!seq.isClosed()){
+                        if(this.isInterrupted()) {
+                            seq.close();
+                        }
                         if (list.size() > 0) {
                             Object object = list.remove(0);
                             Gson gson = new GsonBuilder().create();
@@ -107,19 +119,21 @@ public class ServerSentEventsResource{
                                 .data(String.class, gson.toJson(object)).build());
                         }
                     }
+
                 } catch (final IOException e) {
                     e.printStackTrace();
                     try {
                         if (!seq.isClosed()) {
                             seq.close();
-                            close();
+                            close(subscriptionId);
                         }
                     }catch(IOException ioe) {
                         System.out.println("problem closing seq " + ioe.toString());
                     }
                 }
             }
-        }.start();
+        };
+        this.sseThread.start();
 
         return seq;
     }
