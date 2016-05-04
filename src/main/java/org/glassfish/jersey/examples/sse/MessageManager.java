@@ -8,7 +8,8 @@ import java.util.*;
 public class MessageManager {
 
   private static MessageManager instance;
-  private final Map<String, List<Object>> listMap = new HashMap<>();
+  private final Map<String, List<Object>> clientsToObjectsMap = new HashMap<>();
+  private final Map<String, List<String>> subscribedObjectsMap = new HashMap<>();
 
   MessageManager(){}
 
@@ -20,16 +21,16 @@ public class MessageManager {
   }
 
   public void addList(String subscriptionId, List<Object> list){
-    if(this.listMap.containsKey(subscriptionId)) {
-      List<Object> oldList = this.listMap.get(subscriptionId);
+    if(this.clientsToObjectsMap.containsKey(subscriptionId)) {
+      List<Object> oldList = this.clientsToObjectsMap.get(subscriptionId);
       list.addAll(oldList);
     }
-    this.listMap.put(subscriptionId, list);
+    this.clientsToObjectsMap.put(subscriptionId, list);
   }
 
   public List<Object> getList(String subscriptionId){
-    if(this.listMap.containsKey(subscriptionId)) {
-      return this.listMap.get(subscriptionId);
+    if(this.clientsToObjectsMap.containsKey(subscriptionId)) {
+      return this.clientsToObjectsMap.get(subscriptionId);
     }else {
       List<Object> list = new LinkedList<>();
       this.addList(subscriptionId, list);
@@ -38,13 +39,32 @@ public class MessageManager {
   }
 
   public void removeList(String subscriptionId){
-    this.listMap.remove(subscriptionId);
+    this.clientsToObjectsMap.remove(subscriptionId);
+
   }
 
-  public void addItem(String subscriptionId, Object object) {
-    if (this.listMap.containsKey(subscriptionId)) {
-      this.listMap.get(subscriptionId).add(object);
+  public void addItem(String className, Object object) {
+    if(!subscribedObjectsMap.containsKey(className)) {
+      subscribedObjectsMap.put(className, new LinkedList<>());
+    }
+
+    List<String> subscribedClients = subscribedObjectsMap.get(className);
+    for (String subscribedClient : subscribedClients) {
+      this.clientsToObjectsMap.get(subscribedClient).add(object);
     }
   }
 
-}
+  public void addSubscription(String subscriptionId, String name){
+    if(!this.subscribedObjectsMap.containsKey(name)) {
+      this.subscribedObjectsMap.put(name, new LinkedList<>());
+    }
+
+    if (!this.subscribedObjectsMap.get(name).contains(subscriptionId)){
+      this.subscribedObjectsMap.get(name).add(subscriptionId);
+    }
+  }
+
+  public void removeSubscription(String subscriptionId, String name) {
+
+  }
+  }

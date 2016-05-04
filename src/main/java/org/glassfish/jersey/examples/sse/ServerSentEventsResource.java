@@ -79,8 +79,9 @@ public class ServerSentEventsResource{
     }
 
     @POST
-    public void addMessage(final String message) throws IOException {
-        eventOutput.write(new OutboundEvent.Builder().name("custom-message").data(String.class, message).build());
+    @Path("updates/{subscriptionId}")
+    public void addMessage(@PathParam("subscriptionId") final String subscriptionId, final SampleObject message) throws IOException {
+        MessageManager.getInstance().addItem(subscriptionId, message);
     }
 
   /**
