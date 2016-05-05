@@ -5,7 +5,10 @@ import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.glassfish.grizzly.http.server.CLStaticHttpHandler;
+import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.sse.SseFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -27,6 +30,7 @@ public class App {
       System.out.println("\"Server-Sent Events\" Jersey Example App");
 
       final ResourceConfig resourceConfig = new ResourceConfig(RestEventsResource.class, ServerSentEventsResource.class, SseFeature.class);
+      resourceConfig.register(JacksonFeature.class);
 
       final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, resourceConfig, false);
       Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -35,6 +39,9 @@ public class App {
           server.shutdownNow();
         }
       }));
+
+      HttpHandler httpHandler = new CLStaticHttpHandler(HttpServer.class.getClassLoader(), "/WEB-INF/");
+      server.getServerConfiguration().addHttpHandler(httpHandler, "/html/");
       server.start();
 
       System.out.println(String.format("Application started.\nTry out %s%s\nStop the application using CTRL+C",

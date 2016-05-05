@@ -39,8 +39,6 @@
  */
 package org.glassfish.jersey.examples.sse;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.glassfish.jersey.media.sse.EventOutput;
 
 import javax.ws.rs.*;
@@ -58,10 +56,8 @@ public class RestEventsResource{
     @POST
     @Path("send/{subscriptionId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createNewSampleObject(@PathParam("subscriptionId") String subscriptionId, String sampleObjectJson){
-        Gson gson = new GsonBuilder().create();
-        SampleObject sampleObject = gson.fromJson(sampleObjectJson, SampleObject.class);
-        MessageManager.getInstance().addItem(subscriptionId, sampleObject);
+    public Response createNewSampleObject(@PathParam("subscriptionId") String subscriptionId, SampleObject sampleObject){
+        MessageManager.getInstance().addObject(SampleObject.class.getName(), sampleObject);
         return Response.status(200).build();
 
     }

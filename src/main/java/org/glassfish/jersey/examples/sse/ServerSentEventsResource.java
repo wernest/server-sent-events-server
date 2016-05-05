@@ -75,13 +75,14 @@ public class ServerSentEventsResource{
         final List<Object> list = new LinkedList<>();
         final String subscriptionId = new BigInteger(12, new SecureRandom()).toString();
         MessageManager.getInstance().addList(subscriptionId, list);
+        MessageManager.getInstance().addSubscription(subscriptionId, SampleObject.class.getName());
         return subscriptionId;
     }
 
     @POST
     @Path("updates/{subscriptionId}")
     public void addMessage(@PathParam("subscriptionId") final String subscriptionId, final SampleObject message) throws IOException {
-        MessageManager.getInstance().addItem(subscriptionId, message);
+        MessageManager.getInstance().addObject(subscriptionId, message);
     }
 
   /**
@@ -116,7 +117,7 @@ public class ServerSentEventsResource{
                         if (list.size() > 0) {
                             Object object = list.remove(0);
                             Gson gson = new GsonBuilder().create();
-                            seq.write(new OutboundEvent.Builder().name(SampleObject.class.getSimpleName())
+                            seq.write(new OutboundEvent.Builder().name(object.getClass().getSimpleName())
                                 .data(String.class, gson.toJson(object)).build());
                         }
                     }

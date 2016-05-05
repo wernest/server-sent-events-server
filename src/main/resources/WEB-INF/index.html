@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.3.min.js"></script>
+    <script type="text/javascript" src="polyfill.js"></script>
+    <script type="text/javascript">
+        $( document ).ready(function() {
+
+            $.ajax({
+                url: "/server-sent-events/updates"
+            }).done(function(subscriberId){
+                if(!isNaN(parseInt(subscriberId))){
+                    var subscriberId = parseInt(subscriberId);
+                    startEvents(subscriberId);
+                }
+            })
+
+        });
+
+        function sendObject(){
+           //TODO Create new object and save to server
+        }
+
+        function startEvents(subscriberId){
+            var source = new EventSource('/server-sent-events/updates/' + subscriberId);
+            source.onopen = function() {
+                $('#targetDiv').append("Server Side Event Opened:  " + subscriberId + "</br>");
+            };
+
+            source.addEventListener("SampleObject", function(event){
+                event = JSON.parse(event.data);
+                $('#targetDiv').append("Event Received").append(event.name + " is " + event.age).append('</br>');
+
+            });
+
+            source.onmessage = function(event){
+                $('#targetDiv').append("Event Received");
+            };
+
+        }
+    </script>
+</head>
+<body>
+Hello World
+
+<div id="targetDiv"></div>
+
+<button id="newObject" onclick="sendObject()">New Object</button>
+</body>
+</html>

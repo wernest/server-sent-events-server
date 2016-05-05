@@ -1,6 +1,8 @@
 package org.glassfish.jersey.examples.sse;
 
+import javax.xml.bind.annotation.XmlRootElement;
 
+@XmlRootElement
 public class SampleObject {
 
   private String name;
