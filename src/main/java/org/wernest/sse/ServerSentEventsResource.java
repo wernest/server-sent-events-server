@@ -37,11 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.jersey.examples.sse;
+package org.wernest.sse;
 
 import java.io.IOException;
-import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.List;
 
@@ -60,29 +58,26 @@ import org.glassfish.jersey.media.sse.SseFeature;
 import javax.ws.rs.core.MediaType;
 
 /**
- * @author Pavel Bucek (pavel.bucek at oracle.com)
+ * @author wernest
  */
 @Path("server-sent-events")
 public class ServerSentEventsResource{
 
     private static EventOutput eventOutput = new EventOutput();
-    private Thread sseThread = null;
 
     @GET
     @Path("updates")
     @Produces(MediaType.APPLICATION_JSON)
     public String get(){
-        final List<Object> list = new LinkedList<>();
-        final String subscriptionId = new BigInteger(12, new SecureRandom()).toString();
-        MessageManager.getInstance().addList(subscriptionId, list);
-        MessageManager.getInstance().addSubscription(subscriptionId, SampleObject.class.getName());
+        final String subscriptionId = String.valueOf(new Random().nextInt());
+        MessageManager.getInstance().addObjectSubscription(subscriptionId, SampleObject.class.getName());
         return subscriptionId;
     }
 
     @POST
-    @Path("updates/{subscriptionId}")
-    public void addMessage(@PathParam("subscriptionId") final String subscriptionId, final SampleObject message) throws IOException {
-        MessageManager.getInstance().addObject(subscriptionId, message);
+    @Path("updates")
+    public void addMessage(final SampleObject message) throws IOException {
+        MessageManager.getInstance().addObject(SampleObject.class.getName(), message);
     }
 
   /**
@@ -95,7 +90,6 @@ public class ServerSentEventsResource{
     public void close(@PathParam("subscriptionId") String subscriptionId) throws IOException {
         eventOutput.close();
         ServerSentEventsResource.setEventOutput(new EventOutput());
-        this.sseThread.interrupt();
         MessageManager.getInstance().removeList(subscriptionId);
     }
 
@@ -104,30 +98,23 @@ public class ServerSentEventsResource{
     @Produces(SseFeature.SERVER_SENT_EVENTS)
     public EventOutput startChannelCommunication(@PathParam("subscriptionId") final String subscriptionId) {
         final EventOutput seq = new EventOutput();
-        final List<Object> list = MessageManager.getInstance().getList(subscriptionId);
-        MessageManager.getInstance().addList(subscriptionId, list);
+        final List<Object> list = new LinkedList<>();
 
-        this.sseThread = new Thread() {
+        final Thread sseThread = new Thread() {
             public void run() {
                 try{
-                    while(!seq.isClosed()){
-                        if(this.isInterrupted()) {
-                            seq.close();
-                        }
-                        if (list.size() > 0) {
-                            Object object = list.remove(0);
-                            Gson gson = new GsonBuilder().create();
-                            seq.write(new OutboundEvent.Builder().name(object.getClass().getSimpleName())
-                                .data(String.class, gson.toJson(object)).build());
-                        }
+                    while(list.size() > 0){
+                        Object object = list.remove(0);
+                        Gson gson = new GsonBuilder().create();
+                        seq.write(new OutboundEvent.Builder().name(object.getClass().getSimpleName())
+                            .data(String.class, gson.toJson(object)).build());
                     }
-
                 } catch (final IOException e) {
-                    e.printStackTrace();
                     try {
                         if (!seq.isClosed()) {
                             seq.close();
                             close(subscriptionId);
+                            MessageManager.getInstance().removeList(subscriptionId);
                         }
                     }catch(IOException ioe) {
                         System.out.println("problem closing seq " + ioe.toString());
@@ -135,7 +122,10 @@ public class ServerSentEventsResource{
                 }
             }
         };
-        this.sseThread.start();
+        sseThread.start();
+
+        MessageManager.getInstance().addList(subscriptionId, sseThread, list);
+
 
         return seq;
     }

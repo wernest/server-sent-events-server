@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.3.min.js"></script>
-    <script type="text/javascript" src="polyfill.js"></script>
+    <script type="text/javascript" src="/html/polyfill.js"></script>
     <script type="text/javascript">
         $( document ).ready(function() {
 
@@ -18,9 +18,20 @@
             })
 
         });
+        var ndx = 0;
 
         function sendObject(){
-           //TODO Create new object and save to server
+            var newObject = {
+                name: "Client New Obj",
+                age: ndx++,
+                greeting: "Hello World"
+            };
+            $.ajax({
+                type: "POST",
+                url: "/rest-event/send",
+                data: JSON.stringify(newObject),
+                contentType: "application/json"
+            });
         }
 
         function startEvents(subscriberId){
@@ -31,8 +42,7 @@
 
             source.addEventListener("SampleObject", function(event){
                 event = JSON.parse(event.data);
-                $('#targetDiv').append("Event Received").append(event.name + " is " + event.age).append('</br>');
-
+                $('#targetDiv').append("Event Received ").append(event.name + " is " + event.age).append('</br>');
             });
 
             source.onmessage = function(event){

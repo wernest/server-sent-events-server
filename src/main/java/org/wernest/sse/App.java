@@ -1,4 +1,4 @@
-package org.glassfish.jersey.examples.sse;
+package org.wernest.sse;
 
 import java.io.IOException;
 import java.net.URI;

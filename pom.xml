@@ -60,7 +60,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>org.glassfish.jersey.examples.sse.App</mainClass>
+                            <mainClass>org.wernest.sse.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -82,7 +82,7 @@
                             </descriptorRefs>
                             <archive>
                                 <manifest>
-                                    <mainClass>org.glassfish.jersey.examples.sse.App</mainClass>
+                                    <mainClass>org.wernest.sse.App</mainClass>
                                 </manifest>
                             </archive>
                         </configuration>
