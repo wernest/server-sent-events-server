@@ -1,106 +1,59 @@
-<!--
+/*
+MIT License
 
-    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+Copyright (c) 2016 William Ernest
 
-    Copyright (c) 2015 Oracle and/or its affiliates. All rights reserved.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-    The contents of this file are subject to the terms of either the GNU
-    General Public License Version 2 only ("GPL") or the Common Development
-    and Distribution License("CDDL") (collectively, the "License").  You
-    may not use this file except in compliance with the License.  You can
-    obtain a copy of the License at
-    http://glassfish.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
-    language governing permissions and limitations under the License.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-    When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
 
-    GPL Classpath Exception:
-    Oracle designates this particular file as subject to the "Classpath"
-    exception as provided by Oracle in the GPL Version 2 section of the License
-    file that accompanied this code.
-
-    Modifications:
-    If applicable, add the following below the License Header, with the fields
-    enclosed by brackets [] replaced by your own identifying information:
-    "Portions Copyright [year] [name of copyright owner]"
-
-    Contributor(s):
-    If you wish your version of this file to be governed by only the CDDL or
-    only the GPL Version 2, indicate your decision by adding "[Contributor]
-    elects to include this software in this distribution under the [CDDL or GPL
-    Version 2] license."  If you don't indicate a single choice of license, a
-    recipient has the option to distribute your version of this file under
-    either the CDDL, the GPL Version 2 or to extend the choice of license to
-    its licensees as provided above.  However, if you add GPL Version 2 code
-    and therefore, elected the GPL Version 2 license, then the option applies
-    only if the new code is made subject to such option by the copyright
-    holder.
-
--->
-
-Server-Sent Events (SSE) Example
+SSE Example using Jersey
 ===================================
 
-This example demonstrates JAX-RS 2.0 server-sent events support sometimes also called one-way publish-subscribe model.
+The Jersey example for SSE doesn't show you a solid way of handling multiple clients and persistent connections. 
+This implementation handles a few cases I found myself in need of. 
 
-The full description how to create a support for server-sent events can be found in Jersey User Guide, chapter
-[Server-Sent Events (SSE) Support](https://jersey.java.net/documentation/latest/sse.html).
+Specifically I needed the following features 
+..* All REST communication to go through the SSE channel. 
+..* All REST events immediately return a response, while output will come via the SSE channel. 
+..* Mapping subscribers to subscriptions for objects. 
+..* Basically.... I needed webservices without webservices.
 
-It is highly recommended to look at details of SSE API Specification on
-<http://www.w3.org/TR/2009/WD-eventsource-20091029/>
+You can read the details here
+[Server-Sent Events](https://jersey.java.net/documentation/latest/sse.html).
 
-Contents
+
+
+Example
 --------
+To subscribe as a client you would send a get request to `sse/updates`. This will return a 
+subscriber ID value to open a channel to communicate with. At that point, send a get request to 
+`/sse/updates/{subscriberId}` and you will get a SSE event. 
 
-The mapping of the URI path space is presented in the following table:
-
-URI path                              | Resource class             | HTTP methods   | Description
-------------------------------------- | -------------------------- | -------------- | ------------
-**_server-sent-events_**              | ServerSentEventsResource   | GET            | Get entire EventOutput with all messages
-**_server-sent-events_**              | ServerSentEventsResource   | POST           | Insert a new message in EventOutput
-**_server-sent-events_**              | ServerSentEventsResource   | DELETE         | Reset EventOutput
-**_server-sent-events/domains/{id}_** | BlockingPostChatResource   | POST           | Generate several messages with a delay in EventOutput and return it
-
-Sample Response
----------------
-
-A great example of Server-Sent Events is `server-sent-events/domains/{id}` which sends several messages with a delay 200ms
-between each other.
-
->     curl -v -X POST http://localhost:8080/server-sent-events/domains/1 -H "Content-Type: text/event-stream"
-
-Look at a console how events are handled one after another in the right order.
-
-```
-event: domain-progress
-data: starting domain 1 ...
-
-event: domain-progress
-data: 50%
-
-event: domain-progress
-data: 60%
-
-event: domain-progress
-data: 70%
-
-event: domain-progress
-data: 99%
-
-event: domain-progress
-data: done
-```
+The example contains a jQuery page that will instantiate a new `SampleObject` and send it to the 
+server. All others who are subscribed to that class will receive it. 
 
 Running the Example
 -------------------
 
-Look at Jersey Documentation to learn how to consume Server-Sent Events using Jersey Client 
-<https://jersey.java.net/documentation/latest/sse.html#d0e11786>
+Consuming of Jersey events is included in the code for a web browser, and another project called 
+sse-client will demonstrate how to consume the events using a Java client. 
 
 Run the example as follows:
 
 >     mvn clean compile exec:java
-
-This deploys the example using [Grizzly](http://grizzly.java.net/) container.

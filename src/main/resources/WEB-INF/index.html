@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.3.min.js"></script>
-    <script type="text/javascript" src="/html/polyfill.js"></script>
+    <script type="text/javascript" src="/polyfill.js"></script>
     <script type="text/javascript">
         $( document ).ready(function() {
 
             $.ajax({
-                url: "/server-sent-events/updates"
+                url: "/sse/updates"
             }).done(function(subscriberId){
                 if(!isNaN(parseInt(subscriberId))){
                     var subscriberId = parseInt(subscriberId);
@@ -35,14 +35,14 @@
         }
 
         function startEvents(subscriberId){
-            var source = new EventSource('/server-sent-events/updates/' + subscriberId);
+            var source = new EventSource('/sse/updates/' + subscriberId);
             source.onopen = function() {
                 $('#targetDiv').append("Server Side Event Opened:  " + subscriberId + "</br>");
             };
 
             source.addEventListener("SampleObject", function(event){
                 event = JSON.parse(event.data);
-                $('#targetDiv').append("Event Received ").append(event.name + " is " + event.age).append('</br>');
+                $('#targetDiv').append("Event Received ").append(devent.name + " is " + event.age).append('</br>');
             });
 
             source.onmessage = function(event){

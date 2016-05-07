@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.glassfish.jersey.examples.sse</groupId>
+    <groupId>org.wernest.sse</groupId>
     <version>1.0</version>
 
     <artifactId>server-sent-events</artifactId>
     <packaging>jar</packaging>
-    <name>jersey-examples-server-sent-events</name>
+    <name>org-wernest-sse</name>
 
-    <description>Jersey Server-Sent Events example.</description>
+    <description>Wernest Jersey SSE Impl</description>
 
     <dependencies>
         <dependency>
@@ -63,6 +63,22 @@
                             <mainClass>org.wernest.sse.App</mainClass>
                         </manifest>
                     </archive>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.4.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>org.wernest.sse.App</mainClass>
                 </configuration>
             </plugin>
         </plugins>
