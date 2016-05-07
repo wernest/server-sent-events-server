@@ -5,10 +5,10 @@ The Jersey example for SSE doesn't show you a solid way of handling multiple cli
 This implementation handles a few cases I found myself in need of. 
 
 Specifically I needed the following features 
-..* All REST communication to go through the SSE channel. 
-..* All REST events immediately return a response, while output will come via the SSE channel. 
-..* Mapping subscribers to subscriptions for objects. 
-..* Basically.... I needed webservices without webservices.
+  * All REST communication to go through the SSE channel. 
+  * All REST events immediately return a response, while output will come via the SSE channel. 
+  * Mapping subscribers to subscriptions for objects. 
+  * Basically.... I needed webservices without webservices.
 
 You can read the details here
 [Server-Sent Events](https://jersey.java.net/documentation/latest/sse.html).
